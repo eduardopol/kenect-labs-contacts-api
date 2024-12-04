@@ -1,7 +1,6 @@
-package mapper;
+package com.kenect.mapper;
 
 import com.kenect.dto.ContactDto;
-import com.kenect.mapper.ContactMapper;
 import com.kenect.model.Contact;
 import org.junit.jupiter.api.Test;
 
