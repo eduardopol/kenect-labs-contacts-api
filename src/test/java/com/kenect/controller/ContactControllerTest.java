@@ -26,14 +26,12 @@ class ContactControllerTest {
 
     @Test
     void testGetAllContacts() throws Exception {
-        // Arrange
         List<Contact> mockContacts = List.of(
                 Contact.builder().id(1L).name("John Doe").email("john.doe@example.com").build(),
                 Contact.builder().id(2L).name("Jane Doe").email("jane.doe@example.com").build()
         );
         when(contactService.getAllContacts()).thenReturn(mockContacts);
 
-        // Act & Assert
         mockMvc.perform(get("/v1/contacts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("John Doe"))

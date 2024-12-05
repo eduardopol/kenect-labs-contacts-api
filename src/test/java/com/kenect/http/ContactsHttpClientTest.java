@@ -52,7 +52,6 @@ class ContactsHttpClientTest {
 
     @Test
     void testFetchContactsPage_Success() throws Exception {
-        // Arrange
         List<ContactDto> mockContacts = List.of(
                 ContactDto.builder().id(1L).name("John Doe").email("john.doe@example.com").build(),
                 ContactDto.builder().id(2L).name("Jane Doe").email("jane.doe@example.com").build()
@@ -67,7 +66,7 @@ class ContactsHttpClientTest {
         when(httpHeaders.firstValue("total-count")).thenReturn(Optional.of("2"));
         when(httpHeaders.firstValue("total-pages")).thenReturn(Optional.of("1"));
         when(httpResponse.headers()).thenReturn(httpHeaders);
-        
+
         ContactListDto result = contactsHttpClient.fetchContactsPage(1);
 
         assertNotNull(result);
@@ -78,11 +77,9 @@ class ContactsHttpClientTest {
 
     @Test
     void testFetchContactsPage_Failure() throws Exception {
-        // Arrange
         when(httpResponse.statusCode()).thenReturn(500);
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
-        // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> contactsHttpClient.fetchContactsPage(1));
         assertEquals("Failed to fetch contacts from the API", exception.getMessage());
         verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
