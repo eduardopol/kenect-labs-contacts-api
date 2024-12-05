@@ -1,33 +1,42 @@
 package com.kenect.controller;
 
-import com.kenect.http.ContactsHttpClient;
 import com.kenect.model.Contact;
-import com.kenect.service.impl.ContactServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
+import com.kenect.service.ContactService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ContactControllerTest {
+@WebMvcTest(ContactController.class)
+class ContactControllerTest {
 
-    private ContactController contactController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        ContactServiceImpl contactService = new ContactServiceImpl(new ContactsHttpClient());
-        contactController = new ContactController(contactService);
-    }
+    @MockitoBean
+    private ContactService contactService;
 
     @Test
-    public void testGetAllContactsWithEmptyResponse() {
-        List<Contact> contacts = contactController.getAllContacts();
+    void testGetAllContacts() throws Exception {
+        // Arrange
+        List<Contact> mockContacts = List.of(
+                Contact.builder().id(1L).name("John Doe").email("john.doe@example.com").build(),
+                Contact.builder().id(2L).name("Jane Doe").email("jane.doe@example.com").build()
+        );
+        when(contactService.getAllContacts()).thenReturn(mockContacts);
 
-        assertNotNull(contacts);
-        assertTrue(contacts.isEmpty(), "Expected an empty list when no contacts are available");
-
+        // Act & Assert
+        mockMvc.perform(get("/v1/contacts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("John Doe"))
+                .andExpect(jsonPath("$[1].name").value("Jane Doe"));
     }
-
 }

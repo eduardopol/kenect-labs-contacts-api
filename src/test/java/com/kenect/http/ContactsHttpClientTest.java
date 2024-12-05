@@ -3,6 +3,7 @@ package com.kenect.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kenect.dto.ContactDto;
 import com.kenect.dto.ContactListDto;
+import com.kenect.factory.ObjectMapperFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -36,7 +37,8 @@ class ContactsHttpClientTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        contactsHttpClient = new ContactsHttpClient();
+        objectMapper = ObjectMapperFactory.createObjectMapper();
+        contactsHttpClient = new ContactsHttpClient(httpClient, objectMapper);
     }
 
     @Test
@@ -52,10 +54,8 @@ class ContactsHttpClientTest {
         when(httpResponse.body()).thenReturn(mockBody);
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
-        // Act
         ContactListDto result = contactsHttpClient.fetchContactsPage(1);
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.getContacts().size());
         assertEquals("John Doe", result.getContacts().get(0).getName());

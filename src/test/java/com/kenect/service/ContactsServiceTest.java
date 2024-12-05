@@ -1,69 +1,109 @@
 package com.kenect.service;
 
+import com.kenect.dto.ContactDto;
+import com.kenect.dto.ContactListDto;
 import com.kenect.http.ContactsHttpClient;
 import com.kenect.model.Contact;
 import com.kenect.service.impl.ContactServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class ContactsServiceTest {
+class ContactServiceImplTest {
 
+    @Mock
+    private ContactsHttpClient contactsHttpClient;
+
+    @InjectMocks
     private ContactServiceImpl contactService;
 
-    @BeforeEach
-    void setUp() {
-        contactService = new ContactServiceImpl(new ContactsHttpClient());
-
+    public ContactServiceImplTest() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testGetAllContactsWithEmptyResponse() {
-        List<Contact> contacts = contactService.getAllContacts();
+    void testGetAllContacts_MultiplePages() {
+        // Arrange
+        List<ContactDto> page1 = List.of(
+                ContactDto.builder().id(1L).name("John Doe").email("john.doe@example.com").build(),
+                ContactDto.builder().id(2L).name("Jane Doe").email("jane.doe@example.com").build()
+        );
+        List<ContactDto> page2 = List.of(
+                ContactDto.builder().id(3L).name("Jack Doe").email("jack.doe@example.com").build()
+        );
 
-        assertNotNull(contacts);
-        assertTrue(contacts.isEmpty(), "Expected an empty list when no contacts are available");
+        when(contactsHttpClient.fetchContactsPage(1)).thenReturn(ContactListDto.builder()
+                .contacts(page1).currentPage(1).totalPages(2).build());
+        when(contactsHttpClient.fetchContactsPage(2)).thenReturn(ContactListDto.builder()
+                .contacts(page2).currentPage(2).totalPages(2).build());
+
+        // Act
+        List<Contact> result = contactService.getAllContacts();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals("John Doe", result.get(0).getName());
+        assertEquals("Jane Doe", result.get(1).getName());
+        assertEquals("Jack Doe", result.get(2).getName());
+        verify(contactsHttpClient, times(2)).fetchContactsPage(anyInt());
     }
 
     @Test
-    public void testGetAllContactsWithSingleItemResponse() {
-        List<Contact> contacts = contactService.getAllContacts();
+    void testGetAllContacts_SinglePage() {
+        // Arrange
+        List<ContactDto> singlePage = List.of(
+                ContactDto.builder().id(1L).name("John Doe").email("john.doe@example.com").build()
+        );
 
-        assertNotNull(contacts);
-        assertTrue(!contacts.isEmpty(), "Expected a list when with a single contact");
+        when(contactsHttpClient.fetchContactsPage(1)).thenReturn(ContactListDto.builder()
+                .contacts(singlePage).currentPage(1).totalPages(1).build());
+
+        // Act
+        List<Contact> result = contactService.getAllContacts();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("John Doe", result.get(0).getName());
+        verify(contactsHttpClient, times(1)).fetchContactsPage(anyInt());
     }
 
-   /* @Test
-    public void testGetAllContactsWithSingleItemResponse() {
+    @Test
+    void testGetAllContacts_EmptyResponse() {
+        // Arrange
+        when(contactsHttpClient.fetchContactsPage(1)).thenReturn(ContactListDto.builder()
+                .contacts(List.of()).currentPage(1).totalPages(1).build());
 
-        List<Contact> contacts = contactService.getAllContacts();
+        // Act
+        List<Contact> result = contactService.getAllContacts();
 
-        assertNotNull(contacts);
-        assertTrue(!contacts.isEmpty(), "Expected a list when with a single contact");
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(contactsHttpClient, times(1)).fetchContactsPage(anyInt());
     }
 
-    public Contact generateRandomContact() {
-        long id = ThreadLocalRandom.current().nextLong(1, 10000);
+    @Test
+    void testGetAllContacts_ApiException() {
+        // Arrange
+        when(contactsHttpClient.fetchContactsPage(1)).thenThrow(new RuntimeException("API Error"));
 
-        String name = "Contact " + id;
-
-        String email = "contact" + id + "@example.com";
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime randomCreatedAt = now.minusDays(ThreadLocalRandom.current().nextInt(1, 365));
-        LocalDateTime randomUpdatedAt = randomCreatedAt.plusDays(ThreadLocalRandom.current().nextInt(1, 365 - (int) randomCreatedAt.until(now).toDays()));
-
-        return Contact.builder()
-                .id(id)
-                .name(name)
-                .email(email)
-                .createdAt(randomCreatedAt)
-                .updatedAt(randomUpdatedAt)
-                .build();
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> contactService.getAllContacts());
+        assertEquals("API Error", exception.getMessage());
+        verify(contactsHttpClient, times(1)).fetchContactsPage(anyInt());
     }
-*/
 }
