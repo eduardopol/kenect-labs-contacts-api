@@ -8,11 +8,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +35,9 @@ class ContactsHttpClientTest {
     @Mock
     private HttpResponse<String> httpResponse;
 
+    @Mock
+    private HttpHeaders httpHeaders;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -39,6 +45,9 @@ class ContactsHttpClientTest {
         MockitoAnnotations.openMocks(this);
         objectMapper = ObjectMapperFactory.createObjectMapper();
         contactsHttpClient = new ContactsHttpClient(httpClient, objectMapper);
+
+        ReflectionTestUtils.setField(contactsHttpClient, "apiUrl", "https://api.example.com");
+        ReflectionTestUtils.setField(contactsHttpClient, "apiToken", "dummyToken");
     }
 
     @Test
@@ -54,6 +63,11 @@ class ContactsHttpClientTest {
         when(httpResponse.body()).thenReturn(mockBody);
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
+        when(httpHeaders.firstValue("current-page")).thenReturn(Optional.of("1"));
+        when(httpHeaders.firstValue("total-count")).thenReturn(Optional.of("2"));
+        when(httpHeaders.firstValue("total-pages")).thenReturn(Optional.of("1"));
+        when(httpResponse.headers()).thenReturn(httpHeaders);
+        
         ContactListDto result = contactsHttpClient.fetchContactsPage(1);
 
         assertNotNull(result);
