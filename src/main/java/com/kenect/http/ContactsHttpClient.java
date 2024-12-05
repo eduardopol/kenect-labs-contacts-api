@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kenect.dto.ContactDto;
 import com.kenect.dto.ContactListDto;
-import com.kenect.factory.ObjectMapperFactory;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class ContactsHttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ContactsHttpClient.class);
@@ -26,16 +27,11 @@ public class ContactsHttpClient {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${kenect.contacts-api.url}")
+    @Value("${kenect.contacts-api.url:https://api.example.com}")
     private String apiUrl;
 
-    @Value("${kenect.contacts-api.token}")
+    @Value("${kenect.contacts-api.token:defaultToken}")
     private String apiToken;
-
-    public ContactsHttpClient() {
-        this.httpClient = HttpClient.newHttpClient();
-        this.objectMapper = ObjectMapperFactory.createObjectMapper();
-    }
 
     /**
      * Fetch a single page of contacts from the external API.
