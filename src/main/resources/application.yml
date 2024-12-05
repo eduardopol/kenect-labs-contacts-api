@@ -10,4 +10,4 @@ server:
 kenect:
   contacts-api:
     url: https://candidate-challenge-api-489237493095.us-central1.run.app/api/v1/contacts
-    token: J7ybt6jv6pdJ4gyQP9gNonsY
+    token: ${CONTACTS_API_TOKEN}
