@@ -1,36 +1,28 @@
 package com.kenect.service;
 
+import com.kenect.http.ContactsHttpClient;
 import com.kenect.model.Contact;
 import com.kenect.service.impl.ContactServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ContactsServiceTest {
 
     private ContactServiceImpl contactService;
-    private RestTemplate restTemplate;
 
     @BeforeEach
     void setUp() {
-        restTemplate = mock(RestTemplate.class);
-        contactService = new ContactServiceImpl();
+        contactService = new ContactServiceImpl(new ContactsHttpClient());
+
     }
 
     @Test
     public void testGetAllContactsWithEmptyResponse() {
-        when(restTemplate.getForObject(anyString(), eq(Contact[].class)))
-                .thenReturn(new Contact[0]);
-
         List<Contact> contacts = contactService.getAllContacts();
 
         assertNotNull(contacts);
@@ -39,9 +31,6 @@ public class ContactsServiceTest {
 
     @Test
     public void testGetAllContactsWithSingleItemResponse() {
-        when(restTemplate.getForObject(anyString(), eq(Contact[].class)))
-                .thenReturn(new Contact[0]);
-
         List<Contact> contacts = contactService.getAllContacts();
 
         assertNotNull(contacts);

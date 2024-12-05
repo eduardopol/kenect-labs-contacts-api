@@ -15,17 +15,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ContactMapperTest {
 
     @Test
-    void testNullContactDtoToContactMapping() {
+    void testNullContactToContactDtoMapping() {
         Contact contact = ContactMapper.toContact(null);
 
         assertNull(contact);
     }
 
     @Test
-    void testContactDtoToContactMapping() {
+    void testContactDtoToContactDtoMapping() {
         LocalDateTime now = LocalDateTime.now();
 
-        ContactDto dto = ContactDto.builder()
+        ContactDto contact = ContactDto.builder()
                 .id(1L)
                 .name("John Doe")
                 .email("john.doe@email.com")
@@ -33,22 +33,22 @@ public class ContactMapperTest {
                 .updatedAt(now.plusDays(1))
                 .build();
 
-        Contact contact = ContactMapper.toContact(dto);
+        Contact contactDto = ContactMapper.toContact(contact);
 
-        assertNotNull(contact);
-        assertEquals(dto.getId(), contact.getId());
-        assertEquals(dto.getName(), contact.getName());
-        assertEquals(dto.getEmail(), contact.getEmail());
-        assertEquals(dto.getSource(), contact.getSource());
-        assertEquals(now, contact.getCreatedAt());
-        assertEquals(now.plusDays(1), contact.getUpdatedAt());
+        assertNotNull(contactDto);
+        assertEquals(contact.getId(), contactDto.getId());
+        assertEquals(contact.getName(), contactDto.getName());
+        assertEquals(contact.getEmail(), contactDto.getEmail());
+        assertEquals("KENECT_LABS", contactDto.getSource());
+        assertEquals(now, contactDto.getCreatedAt());
+        assertEquals(now.plusDays(1), contactDto.getUpdatedAt());
     }
 
     @Test
-    void testContactDtoListToContactListMapping() {
+    void testContactDtoListToContactDtoListMapping() {
         LocalDateTime now = LocalDateTime.now();
 
-        ContactDto dto = ContactDto.builder()
+        ContactDto contact = ContactDto.builder()
                 .id(1L)
                 .name("John Doe")
                 .email("john.doe@email.com")
@@ -56,7 +56,7 @@ public class ContactMapperTest {
                 .updatedAt(now.plusDays(1))
                 .build();
 
-        ContactDto dto2 = ContactDto.builder()
+        ContactDto contact2 = ContactDto.builder()
                 .id(1L)
                 .name("Jane Doe")
                 .email("jane.doe@email.com")
@@ -64,15 +64,15 @@ public class ContactMapperTest {
                 .updatedAt(now.plusDays(1))
                 .build();
 
-        List<Contact> contacts = ContactMapper.toContactList(List.of(dto, dto2));
+        List<Contact> contacts = ContactMapper.toContactList(List.of(contact, contact2));
 
         assertNotNull(contacts);
         assertFalse(contacts.isEmpty());
         assertEquals(2, contacts.size());
-        assertEquals(dto.getId(), contacts.getFirst().getId());
-        assertEquals(dto.getName(), contacts.getFirst().getName());
-        assertEquals(dto.getEmail(), contacts.getFirst().getEmail());
-        assertEquals(dto.getSource(), contacts.getFirst().getSource());
+        assertEquals(contact.getId(), contacts.getFirst().getId());
+        assertEquals(contact.getName(), contacts.getFirst().getName());
+        assertEquals(contact.getEmail(), contacts.getFirst().getEmail());
+        assertEquals("KENECT_LABS", contacts.getFirst().getSource());
         assertEquals(now, contacts.getFirst().getCreatedAt());
         assertEquals(now.plusDays(1), contacts.getFirst().getUpdatedAt());
     }

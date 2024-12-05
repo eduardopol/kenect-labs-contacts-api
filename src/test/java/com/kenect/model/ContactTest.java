@@ -16,7 +16,6 @@ public class ContactTest {
         String expectedEmail = "john.doe@email.com";
         LocalDateTime expectedCreatedAt = LocalDateTime.now();
         LocalDateTime expectedUpdatedAt = LocalDateTime.now();
-        String expectedSource = "KENECT_LABS";
 
         Contact contact = Contact.builder()
                 .id(expectedId)
@@ -30,8 +29,8 @@ public class ContactTest {
         assertEquals(expectedId, contact.getId());
         assertEquals(expectedName, contact.getName());
         assertEquals(expectedEmail, contact.getEmail());
+        assertEquals("KENECT_LABS", contact.getSource());
         assertEquals(expectedCreatedAt, contact.getCreatedAt());
         assertEquals(expectedUpdatedAt, contact.getUpdatedAt());
-        assertEquals(expectedSource, contact.getSource());
     }
 }
