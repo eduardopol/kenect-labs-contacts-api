@@ -9,6 +9,7 @@ import com.kenect.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class ContactServiceImpl implements ContactService {
     private final ContactsHttpClient contactsHttpClient;
 
     @Override
+    @Cacheable("contacts")
     public List<Contact> getAllContacts() {
         logger.info("Getting all contacts");
         List<ContactDto> contacts = new ArrayList<>();
