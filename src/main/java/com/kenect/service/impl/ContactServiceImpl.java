@@ -28,7 +28,7 @@ public class ContactServiceImpl implements ContactService {
     public List<Contact> getAllContacts() {
         logger.info("Getting all contacts");
         List<ContactDto> contacts = new ArrayList<>();
-        int page = 1;
+        int page = 5;
         boolean hasMorePages = true;
 
         while (hasMorePages) {
