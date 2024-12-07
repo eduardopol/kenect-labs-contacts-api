@@ -9,6 +9,13 @@ server:
   servlet:
     context-path: /kenect-labs
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  paths-to-match: /**
+
 kenect:
   contacts-api:
     url: https://candidate-challenge-api-489237493095.us-central1.run.app/api/v1/contacts
