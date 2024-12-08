@@ -18,6 +18,10 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * HTTP client for interacting with the external Contacts API.
+ * Handles requests to fetch paginated contact information.
+ */
 @Component
 @RequiredArgsConstructor
 public class ContactsHttpClient {
@@ -34,13 +38,13 @@ public class ContactsHttpClient {
     private String apiToken;
 
     /**
-     * Fetch a single page of contacts from the external API.
+     * Fetches a single page of contacts from the external API.
      *
-     * @param page the page number to fetch
-     * @return a ContactListDto object, with List of Contacts and pagination info
+     * @param page the page number to fetch.
+     * @return a {@link ContactListDto} object containing the contacts and pagination details.
      */
     public ContactListDto fetchContactsPage(Integer page) {
-        String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 20);
+        String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 2);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -49,9 +53,9 @@ public class ContactsHttpClient {
                 .build();
 
         try {
-            logger.debug("Making request to GET contacts page {}", page);
+            logger.info("Making request to GET contacts page {}", page);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logger.debug("Request to {} return response code {}", url, response.statusCode());
+            logger.info("Request to {} return response code {}", url, response.statusCode());
 
             if (response.statusCode() == 200) {
                 List<ContactDto> contactDtos = objectMapper.readValue(response.body(), new TypeReference<>() {});
@@ -70,6 +74,13 @@ public class ContactsHttpClient {
         }
     }
 
+    /**
+     * Retrieves the value of a specific HTTP header from the response.
+     *
+     * @param response the {@link HttpResponse} object containing headers.
+     * @param header   the name of the header to retrieve.
+     * @return an {@link Optional} containing the value of the header, if present.
+     */
     private Optional<Integer> getHeaderByHeaderName(HttpResponse<String> response, String header) {
         return response.headers()
                 .firstValue(header)
