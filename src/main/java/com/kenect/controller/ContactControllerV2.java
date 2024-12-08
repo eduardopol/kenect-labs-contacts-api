@@ -19,16 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * REST controller for getting contacts.
+ * REST controller for getting contacts version 2.
  * This controller provides API to retrieve contact information.
  */
 @RestController
-@RequestMapping("/v1/contacts")
+@RequestMapping("/v2/contacts")
 @RequiredArgsConstructor
 @Tag(name = "Contacts", description = "Contacts API")
-public class ContactController {
+public class ContactControllerV2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContactController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContactControllerV2.class);
 
     private final ContactService contactService;
 
@@ -46,7 +46,7 @@ public class ContactController {
     @GetMapping
     public List<Contact> getAllContacts() {
         logger.info("Received a call to get all contacts");
-        return contactService.getAllContacts();
+        return contactService.getAllContactsAsync();
     }
 
 }
