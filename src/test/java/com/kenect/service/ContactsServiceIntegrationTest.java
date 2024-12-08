@@ -4,9 +4,12 @@ import com.kenect.dto.ContactDto;
 import com.kenect.dto.ContactListDto;
 import com.kenect.http.ContactsHttpClient;
 import com.kenect.service.impl.ContactServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -24,6 +27,31 @@ class ContactsServiceIntegrationTest {
 
     @MockitoBean
     private ContactsHttpClient contactsHttpClient;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    @BeforeEach
+    void setUp() {
+        Cache cache = cacheManager.getCache("contacts");
+        if (cache != null) {
+            cache.clear();
+        }
+    }
+
+    @Test
+    void testCacheMiss() {
+        List<ContactDto> mockContacts = List.of(
+                ContactDto.builder().id(1L).name("John Doe").email("john.doe@example.com").build(),
+                ContactDto.builder().id(2L).name("Jane Doe").email("jane.doe@example.com").build()
+        );
+        when(contactsHttpClient.fetchContactsPage(any())).thenReturn(ContactListDto.builder()
+                .contacts(mockContacts).totalPages(1).currentPage(1).build());
+
+        contactService.getAllContacts();
+
+        verify(contactsHttpClient, times(1)).fetchContactsPage(any());
+    }
 
     @Test
     void testCachingReducesServiceCalls() {

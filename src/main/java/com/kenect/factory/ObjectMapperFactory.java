@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class ObjectMapperFactory {
 
     /**
-     * Creates and configures an ObjectMapper instance.
+     * Creates and configures an ObjectMapper instance to use Java 8 LocalDateTime class.
      *
      * @return a configured ObjectMapper
      */
