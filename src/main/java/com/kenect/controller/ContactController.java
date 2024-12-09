@@ -10,8 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +21,12 @@ import java.util.List;
  * REST controller for getting contacts.
  * This controller provides API to retrieve contact information.
  */
+@Slf4j
 @RestController
 @RequestMapping("/v1/contacts")
 @RequiredArgsConstructor
-@Tag(name = "Contacts", description = "Contacts API")
+@Tag(name = "Contacts", description = "Async Contacts API")
 public class ContactController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ContactController.class);
 
     private final ContactService contactService;
 
@@ -45,7 +43,7 @@ public class ContactController {
     })
     @GetMapping
     public List<Contact> getAllContacts() {
-        logger.info("Received a call to get all contacts");
+        log.info("Received a call to get all contacts");
         return contactService.getAllContacts();
     }
 
