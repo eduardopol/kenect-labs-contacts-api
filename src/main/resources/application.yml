@@ -23,4 +23,4 @@ kenect:
     queue-capacity: 1000
   contacts-api:
     url: https://candidate-challenge-api-489237493095.us-central1.run.app/api/v1/contacts
-    token: <replace_with_token>
+    token: ${CONTACTS_API_TOKEN}
