@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,8 +34,11 @@ public class ContactsHttpClient {
     @Value("${kenect.contacts-api.url:https://api.example.com}")
     private String apiUrl;
 
-    @Value("${kenect.contacts-api.token:defaultToken}")
+    @Value("${kenect.contacts-api.token}")
     private String apiToken;
+
+    @Value("${kenect.contacts-api.timeout:10}")
+    private Integer httpTimeout;
 
     /**
      * Fetches a single page of contacts from the external API.
@@ -43,14 +47,15 @@ public class ContactsHttpClient {
      * @return a {@link ContactListDto} object containing the contacts and pagination details.
      */
     public ContactListDto fetchContactsPage(Integer page) {
-        if (Objects.isNull(page) || page < 1) {
-            throw new IllegalArgumentException("Page number must be greater than 0");
+        if (Objects.isNull(page) || page < 1 || page > 1000) {
+            throw new IllegalArgumentException("Page number must be greater than 0 and less than 1000");
         }
 
         String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 20);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(httpTimeout))
                 .header("Authorization", "Bearer " + apiToken)
                 .GET()
                 .build();
@@ -69,6 +74,12 @@ public class ContactsHttpClient {
                         .totalContacts(getHeaderByHeaderName(response, "total-count").orElse(contactDtos.size()))
                         .totalPages(getHeaderByHeaderName(response, "total-pages").orElse(page))
                         .build();
+            } else if (response.statusCode() >= 400 && response.statusCode() < 500) {
+                log.warn("Client error: {} for URL {}", response.statusCode(), url);
+                throw new RuntimeException("Failed to fetch contacts from the API. Client error: " + response.statusCode());
+            } else if (response.statusCode() >= 500) {
+                log.error("Server error: {} for URL {}", response.statusCode(), url);
+                throw new RuntimeException("Failed to fetch contacts from the API. Server error: " + response.statusCode());
             } else {
                 throw new RuntimeException("Failed to fetch contacts from the API");
             }
