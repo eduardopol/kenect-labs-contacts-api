@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kenect.dto.ContactDto;
 import com.kenect.dto.ContactListDto;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,17 +15,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * HTTP client for interacting with the external Contacts API.
  * Handles requests to fetch paginated contact information.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ContactsHttpClient {
-
-    private static final Logger logger = LoggerFactory.getLogger(ContactsHttpClient.class);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -44,7 +43,11 @@ public class ContactsHttpClient {
      * @return a {@link ContactListDto} object containing the contacts and pagination details.
      */
     public ContactListDto fetchContactsPage(Integer page) {
-        String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 2);
+        if (Objects.isNull(page) || page < 1) {
+            throw new IllegalArgumentException("Page number must be greater than 0");
+        }
+
+        String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 20);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -53,9 +56,9 @@ public class ContactsHttpClient {
                 .build();
 
         try {
-            logger.info("Making request to GET contacts page {}", page);
+            log.debug("Making request to GET contacts page {}", page);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logger.info("Request to {} return response code {}", url, response.statusCode());
+            log.debug("Request to {} return response code {}", url, response.statusCode());
 
             if (response.statusCode() == 200) {
                 List<ContactDto> contactDtos = objectMapper.readValue(response.body(), new TypeReference<>() {});
