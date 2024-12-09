@@ -48,6 +48,7 @@ class ContactsHttpClientTest {
 
         ReflectionTestUtils.setField(contactsHttpClient, "apiUrl", "https://api.example.com");
         ReflectionTestUtils.setField(contactsHttpClient, "apiToken", "dummyToken");
+        ReflectionTestUtils.setField(contactsHttpClient, "httpTimeout", 15);
     }
 
     @Test
@@ -81,7 +82,7 @@ class ContactsHttpClientTest {
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> contactsHttpClient.fetchContactsPage(1));
-        assertEquals("Failed to fetch contacts from the API", exception.getMessage());
+        assertEquals("Failed to fetch contacts from the API. Server error: 500", exception.getMessage());
         verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
     }
 }

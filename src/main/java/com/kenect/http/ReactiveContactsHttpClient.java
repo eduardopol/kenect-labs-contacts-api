@@ -40,11 +40,9 @@ public class ReactiveContactsHttpClient {
      * @return a Mono containing {@link ContactListDto}.
      */
     public Mono<ContactListDto> fetchContactsPage(Integer page) {
-        if (Objects.isNull(page) || page < 1) {
-            return Mono.error(new IllegalArgumentException("Page number must be greater than 0"));
+        if (Objects.isNull(page) || page < 1 || page > 1000) {
+            return Mono.error(new IllegalArgumentException("Page number must be greater than 0 and less than 1000"));
         }
-
-        String url = String.format("%s?page=%d&pageSize=%d", apiUrl, page, 20);
 
         return webClientBuilder.baseUrl(apiUrl).build()
                 .get()
@@ -56,10 +54,21 @@ public class ReactiveContactsHttpClient {
                 .retrieve()
                 .toEntity(String.class)
                 .flatMap(response -> {
-                    log.info("Request to {} returned response code {}", url, response.getStatusCode());
+                    log.debug("Request to page {} returned response code {}", page, response.getStatusCode());
+
+                    if (!response.getHeaders().containsKey("Content-Type") ||
+                            !Objects.requireNonNull(response.getHeaders().getFirst("Content-Type")).contains("application/json")) {
+                        return Mono.error(new IllegalArgumentException("Unexpected Content-Type header"));
+                    }
 
                     if (response.getStatusCode().is2xxSuccessful()) {
                         return processResponse(response.getBody(), response.getHeaders().toSingleValueMap(), page);
+                    } else if (response.getStatusCode().is4xxClientError()) {
+                        log.warn("Client error: {}", response.getStatusCode());
+                        return Mono.error(new RuntimeException("Client error: " + response.getStatusCode()));
+                    } else if (response.getStatusCode().is5xxServerError()) {
+                        log.error("Server error: {}", response.getStatusCode());
+                        return Mono.error(new RuntimeException("Server error: " + response.getStatusCode()));
                     } else {
                         return Mono.error(new RuntimeException("Failed to fetch contacts from the API"));
                     }
