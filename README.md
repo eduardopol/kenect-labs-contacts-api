@@ -72,11 +72,12 @@ Spring Application Configuration
       spring:
          cache:
             type: caffeine
-2.	API Token: The API token is stored in the application.yml file
+2.	API Token and Timeout: The API token is stored in the application.yml file, along with timeout configuration
       ```
       kenect:
          contacts-api:
             token: <replace_this_with_api_token>
+            timeout: 10
 3.  Thread Pool Configuration for Asynchronous Processing
       ```
       kenect:
